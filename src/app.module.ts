@@ -7,7 +7,7 @@ import { UsersModule } from './users/users.module'
 import { TokensModule } from './tokens/tokens.module'
 import { MailModule } from './mail/mail.module'
 import { AuthModule } from './auth/auth.module'
-import { CloudModule } from './cloud/cloud.module'
+import { AwsModule } from './aws/aws.module'
 import app from './config/app'
 import redis from './config/redis'
 import auth from './config/auth'
@@ -39,7 +39,7 @@ import cloud from './config/cloud'
     TokensModule,
     MailModule,
     AuthModule,
-    CloudModule,
+    AwsModule,
   ],
 })
 export class AppModule {}
