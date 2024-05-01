@@ -27,7 +27,7 @@ model User {
   password   String?
   email      String    @unique
   verified   DateTime?
-  verifyLink String?
+  verifyLink String?   @unique
   provider   Provider  @default(Credentials)
   createdAt  DateTime  @default(now()) @map("created_at")
   updatedAt  DateTime  @updatedAt @map("updated_at")
