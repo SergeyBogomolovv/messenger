@@ -11,11 +11,12 @@ import { CloudModule } from './cloud/cloud.module'
 import app from './config/app'
 import redis from './config/redis'
 import auth from './config/auth'
+import mail from './config/mail'
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [app, redis, auth],
+      load: [app, redis, auth, mail],
       isGlobal: true,
     }),
     CacheModule.registerAsync({
