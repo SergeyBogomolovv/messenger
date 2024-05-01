@@ -29,6 +29,7 @@ export class TokensService {
         id: user.id,
         email: user.email,
         verified: user.verified,
+        provider: user.provider,
       })
     )
   }

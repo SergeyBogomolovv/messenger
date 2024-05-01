@@ -7,7 +7,6 @@ import {
 import { UsersService } from 'src/users/users.service'
 import { LoginDto } from './dto/login.dto'
 import { compareSync } from 'bcrypt'
-import { User } from '@prisma/client'
 import { TokensService } from 'src/tokens/tokens.service'
 import * as uuid from 'uuid'
 import { MailService } from 'src/mail/mail.service'
@@ -24,22 +23,23 @@ export class AuthService {
     private configService: ConfigService,
     private prisma: PrismaService,
   ) {}
+
   async registration(dto: RegistrationDto) {
-    const user = await this.usersService.findOne(dto.email)
-    if (user)
-      throw new ConflictException(
-        'Эта почта уже используется, введите другую либо войдите в аккаунт',
-      )
+    const user = await this.prisma.user.findFirst({
+      where: { OR: [{ username: dto.username }, { email: dto.email }] },
+    })
+    if (user) throw new ConflictException('Такой пользователь уже существует')
     const verifyLink = uuid.v4()
     this.mailService.sendActivationMail({
       to: dto.email,
       link: `${this.configService.get('server_url')}/auth/verify-email/${verifyLink}`,
     })
-    this.usersService.create({ ...dto, verifyLink })
+    await this.usersService.create({ ...dto, verifyLink })
     return { message: 'Письмо с подтверждением выслано вам на почту' }
   }
+
   async login(dto: LoginDto) {
-    const user: User = await this.usersService.findOne(dto.email)
+    const user = await this.usersService.findOne(dto.email)
     if (
       !user ||
       user.provider !== 'Credentials' ||
@@ -54,10 +54,12 @@ export class AuthService {
     const refreshToken = await this.tokensService.generateRefreshToken(user.id)
     return { accesToken, refreshToken, user }
   }
+
   async logout(token: string) {
     await this.tokensService.deleteRefreshToken(token)
     return { message: 'Вы успешно вышли из аккаунта' }
   }
+
   async refresh(token: string) {
     const dbToken = await this.tokensService.getRefreshToken(token)
     if (!dbToken) throw new UnauthorizedException()
@@ -70,13 +72,13 @@ export class AuthService {
     return { user, accesToken }
   }
 
-  async verifyEmail(token: string) {
+  async verifyEmail(verifyLink: string) {
     const user = await this.prisma.user.findUnique({
-      where: { verifyLink: token },
+      where: { verifyLink },
     })
     if (!user) throw new UnauthorizedException()
     await this.prisma.user.update({
-      where: { verifyLink: token },
+      where: { verifyLink },
       data: { verified: new Date() },
     })
   }
