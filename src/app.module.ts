@@ -3,6 +3,7 @@ import { PrismaModule } from './prisma/prisma.module'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { redisStore } from 'cache-manager-redis-yet'
 import { CacheModule } from '@nestjs/cache-manager'
+import { UsersModule } from './users/users.module';
 import app from './config/app'
 import redis from './config/redis'
 
@@ -27,6 +28,7 @@ import redis from './config/redis'
       isGlobal: true,
     }),
     PrismaModule,
+    UsersModule,
   ],
 })
 export class AppModule {}
