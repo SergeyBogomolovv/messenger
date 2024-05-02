@@ -1,15 +1,16 @@
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable } from '@nestjs/common'
 import { User } from '@prisma/client'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { hashSync } from 'bcrypt'
 import { Cache } from 'cache-manager'
 import { CreateUserInput } from './dto/create-user.input'
+import { CACHE_MANAGER } from '@nestjs/cache-manager'
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly cache: Cache,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
   ) {}
   create(user: CreateUserInput) {
     const hashedPassword = this.hashPassword(user.password)

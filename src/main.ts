@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
 import { ConfigService } from '@nestjs/config'
-import { ValidationPipe } from '@nestjs/common'
+import { BadRequestException, ValidationPipe } from '@nestjs/common'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import * as cookieParser from 'cookie-parser'
 import * as cors from 'cors'
@@ -11,7 +11,16 @@ import { HttpExceptionFilter } from 'lib/filters/http-exception.filter'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   const config = app.get(ConfigService)
-  app.useGlobalPipes(new ValidationPipe())
+  app.useGlobalPipes(
+    new ValidationPipe({
+      exceptionFactory: (errors) => {
+        return new BadRequestException({
+          message: errors[0].constraints[Object.keys(errors[0].constraints)[0]],
+        })
+      },
+      stopAtFirstError: true,
+    }),
+  )
   app.useGlobalFilters(new HttpExceptionFilter())
   app.use(cookieParser())
   const corsOptions = {

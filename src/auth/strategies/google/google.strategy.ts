@@ -3,11 +3,14 @@ import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
 import { Strategy, Profile, VerifyCallback } from 'passport-google-oauth20'
 import { PrismaService } from 'src/prisma/prisma.service'
+import { UsersService } from 'src/users/users.service'
+
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(
     configService: ConfigService,
     private readonly prisma: PrismaService,
+    private readonly userService: UsersService,
   ) {
     super({
       clientID: configService.get('google.client'),
@@ -23,9 +26,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     done: VerifyCallback,
   ) {
     const { _json } = profile
-    let user = await this.prisma.user.findUnique({
-      where: { email: _json.email },
-    })
+    let user = await this.userService.findOne(_json.email)
     if (!user) {
       user = await this.prisma.user.create({
         data: {
