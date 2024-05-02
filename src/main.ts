@@ -6,11 +6,13 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import * as cookieParser from 'cookie-parser'
 import * as cors from 'cors'
 import * as passport from 'passport'
+import { HttpExceptionFilter } from 'lib/filters/http-exception.filter'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   const config = app.get(ConfigService)
   app.useGlobalPipes(new ValidationPipe())
+  app.useGlobalFilters(new HttpExceptionFilter())
   app.use(cookieParser())
   const corsOptions = {
     origin: config.get('client_url'),
