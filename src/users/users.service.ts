@@ -29,6 +29,7 @@ export class UsersService {
           OR: [{ id: idOrEmail }, { email: idOrEmail }],
         },
       })
+      if (!dbUser) return null
       await this.cache.set(idOrEmail, dbUser, 60 * 1000)
       return dbUser
     }
