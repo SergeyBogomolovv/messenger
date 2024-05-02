@@ -86,4 +86,8 @@ export class AuthService {
     const refreshToken = await this.tokensService.generateRefreshToken(user.id)
     return { accessToken, refreshToken }
   }
+  async verifyRefreshToken(token: string) {
+    const isToken = await this.tokensService.validateRefreshToken(token)
+    return isToken ? true : false
+  }
 }

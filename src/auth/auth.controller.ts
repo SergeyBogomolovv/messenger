@@ -19,8 +19,11 @@ import { GoogleAuth } from './strategies/google/google.guard'
 import { RegistrationDto } from './dto/registration.dto'
 import { ConfigService } from '@nestjs/config'
 import { User } from '@prisma/client'
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { AccessTokenResponse } from './responses/access-token.response'
+import { MessageResponse } from './responses/message-response'
 
-//TODO documentation
+@ApiTags('Аунтефикация')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -28,6 +31,12 @@ export class AuthController {
     private configService: ConfigService,
   ) {}
 
+  @ApiOperation({
+    summary: 'Вход через гугл',
+    description:
+      'Редиректит на страницу гугла, а потом на клиента с access токеном в query token и рефреш в куках',
+  })
+  @ApiResponse({ status: 300 })
   @Get('login/google')
   @UseGuards(GoogleAuth)
   async googleLogin() {}
@@ -50,6 +59,11 @@ export class AuthController {
       )
   }
 
+  @ApiOperation({
+    summary: 'Вход через почту и пароль',
+    description: 'Ставит рефреш токен в куки и возвращает access',
+  })
+  @ApiResponse({ status: 200, type: AccessTokenResponse })
   @Post('login')
   async login(@Body() dto: LoginDto, @Res() response: Response) {
     const tokens = await this.authService.login(dto)
@@ -68,12 +82,22 @@ export class AuthController {
       .json({ accessToken: tokens.accessToken })
   }
 
+  @ApiOperation({
+    summary: 'Регистрация через почту и пароль',
+    description: 'username и email должны быть уникальны',
+  })
+  @ApiResponse({ status: 200, type: MessageResponse })
   @Post('registration')
   async registration(@Body() dto: RegistrationDto) {
     const message = await this.authService.registration(dto)
     return message
   }
 
+  @ApiOperation({
+    summary: 'Рефреш информации',
+    description: 'Возвращает новый access токен',
+  })
+  @ApiResponse({ status: 200, type: AccessTokenResponse })
   @Get('refresh')
   async refreshTokens(@Cookie('refreshToken') refreshToken: string) {
     if (!refreshToken) throw new UnauthorizedException()
@@ -90,6 +114,11 @@ export class AuthController {
     return res.redirect(this.configService.get('email_redirect'))
   }
 
+  @ApiOperation({
+    summary: 'Выход из учетной записи',
+    description: 'Удаляет токен из куков и бд',
+  })
+  @ApiResponse({ status: 200, type: MessageResponse })
   @Get('logout')
   async logout(
     @Cookie('refreshToken') refreshToken: string,
@@ -100,5 +129,16 @@ export class AuthController {
     }
     const message = await this.authService.logout(refreshToken)
     return response.clearCookie('refreshToken').json(message)
+  }
+
+  @ApiOperation({
+    summary: 'Проверка токена',
+    description:
+      'Проверяет, действителен ли токен из куков, возвращает boolean, использовать для миддлвари',
+  })
+  @ApiResponse({ status: 200, type: Boolean })
+  @Get('verify-token')
+  verifyRefreshToken(@Cookie('refreshToken') refreshToken: string) {
+    return this.authService.verifyRefreshToken(refreshToken)
   }
 }
