@@ -4,8 +4,8 @@ import { AuthController } from './auth.controller'
 import { UsersModule } from 'src/users/users.module'
 import { TokensModule } from 'src/tokens/tokens.module'
 import { MailModule } from 'src/mail/mail.module'
-import { GoogleStrategy } from './strategies/google.strategy'
-import { GoogleAuth } from './strategies/google.guard'
+import { GoogleStrategy } from './strategies/google/google.strategy'
+import { GoogleAuth } from './strategies/google/google.guard'
 
 @Module({
   imports: [UsersModule, TokensModule, MailModule],

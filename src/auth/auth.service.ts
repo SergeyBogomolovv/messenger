@@ -50,9 +50,9 @@ export class AuthService {
     if (!user.verified) {
       throw new UnauthorizedException('Подтвердите почту')
     }
-    const accesToken = this.tokensService.generateAccesToken(user)
+    const accessToken = this.tokensService.generateAccessToken(user)
     const refreshToken = await this.tokensService.generateRefreshToken(user.id)
-    return { accesToken, refreshToken, user }
+    return { accessToken, refreshToken }
   }
 
   async logout(token: string) {
@@ -61,15 +61,11 @@ export class AuthService {
   }
 
   async refresh(token: string) {
-    const dbToken = await this.tokensService.getRefreshToken(token)
-    if (!dbToken) throw new UnauthorizedException()
-    if (new Date(dbToken.exp) < new Date()) {
-      await this.tokensService.deleteRefreshToken(token)
-      throw new UnauthorizedException()
-    }
-    const user = await this.usersService.findOne(dbToken.userId)
-    const accesToken = this.tokensService.generateAccesToken(user)
-    return { user, accesToken }
+    const validatedToken = await this.tokensService.validateRefreshToken(token)
+    if (!validatedToken) throw new UnauthorizedException()
+    const user = await this.usersService.findOne(validatedToken.userId)
+    const accessToken = this.tokensService.generateAccessToken(user)
+    return accessToken
   }
 
   async verifyEmail(verifyLink: string) {
@@ -83,11 +79,11 @@ export class AuthService {
     })
   }
 
-  async googleAuth(email: string) {
-    const user = await this.usersService.findOne(email)
+  async generateTokens(id: string) {
+    const user = await this.usersService.findOne(id)
     if (!user) throw new BadRequestException()
-    const accesToken = this.tokensService.generateAccesToken(user)
+    const accessToken = this.tokensService.generateAccessToken(user)
     const refreshToken = await this.tokensService.generateRefreshToken(user.id)
-    return { accesToken, refreshToken, user }
+    return { accessToken, refreshToken }
   }
 }

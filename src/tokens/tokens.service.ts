@@ -11,26 +11,40 @@ export class TokensService {
     private prisma: PrismaService,
     private jwtService: JwtService,
   ) {}
+
+  async validateRefreshToken(token: string) {
+    const dbToken = await this.prisma.token.findUnique({ where: { token } })
+    if (!dbToken) return null
+    if (new Date(dbToken.exp) < new Date()) {
+      await this.deleteRefreshToken(token)
+      return null
+    }
+    return dbToken
+  }
+
   generateRefreshToken(userId: string): Promise<Token> {
     return this.prisma.token.create({
       data: { token: uuid.v4(), exp: add(new Date(), { months: 1 }), userId },
     })
   }
+
   getRefreshToken(token: string): Promise<Token> {
-    return this.prisma.token.findFirst({ where: { token } })
+    return this.prisma.token.findUnique({ where: { token } })
   }
-  async deleteRefreshToken(token: string): Promise<Token> {
+
+  deleteRefreshToken(token: string): Promise<Token> {
     return this.prisma.token.delete({ where: { token } })
   }
-  generateAccesToken(user: User) {
-    return (
-      'Bearer ' +
-      this.jwtService.sign({
-        id: user.id,
-        email: user.email,
-        verified: user.verified,
-        provider: user.provider,
-      })
-    )
+
+  generateAccessToken(user: User) {
+    return this.jwtService.sign({
+      id: user.id,
+      logo: user.logo,
+      name: user.name,
+      username: user.username,
+      email: user.email,
+      verified: user.verified,
+      provider: user.provider,
+    })
   }
 }

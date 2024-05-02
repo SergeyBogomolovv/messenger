@@ -15,10 +15,12 @@ import { LoginDto } from './dto/login.dto'
 import { AuthService } from './auth.service'
 import { Response, Request } from 'express'
 import { Cookie } from 'lib/decorators/cookie.decorator'
-import { GoogleAuth } from './strategies/google.guard'
+import { GoogleAuth } from './strategies/google/google.guard'
 import { RegistrationDto } from './dto/registration.dto'
 import { ConfigService } from '@nestjs/config'
+import { User } from '@prisma/client'
 
+//TODO caching
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -26,41 +28,44 @@ export class AuthController {
     private configService: ConfigService,
   ) {}
 
-  @UseGuards(GoogleAuth)
   @Get('login/google')
+  @UseGuards(GoogleAuth)
   async googleLogin() {}
 
-  //тут переадресовывать на клиент с куками чтобы оттуда делать рефрешь
-  @UseGuards(GoogleAuth)
   @Get('google/redirect')
+  @UseGuards(GoogleAuth)
   async googleCallback(@Req() request: Request, @Res() response: Response) {
+    const user = request.user as User
+    const tokens = await this.authService.generateTokens(user.id)
     return response
-      .cookie('refreshToken', request.user['refreshToken'].token, {
+      .cookie('refreshToken', tokens.refreshToken.token, {
         httpOnly: true,
         sameSite: 'lax',
-        expires: new Date(request.user['refreshToken'].exp),
+        expires: new Date(tokens.refreshToken.exp),
         secure: false,
         path: '/',
       })
-      .redirect(this.configService.get('google.client_redirect'))
+      .redirect(
+        `${this.configService.get('google.client_redirect')}?token=${tokens.accessToken}`,
+      )
   }
 
   @Post('login')
   async login(@Body() dto: LoginDto, @Res() response: Response) {
-    const data = await this.authService.login(dto)
-    if (!data) {
+    const tokens = await this.authService.login(dto)
+    if (!tokens) {
       throw new BadRequestException('Ошибка при входе, повторите еще раз')
     }
-    response.cookie('refreshToken', data.refreshToken.token, {
-      httpOnly: true,
-      sameSite: 'lax',
-      expires: new Date(data.refreshToken.exp),
-      secure: false,
-      path: '/',
-    })
     return response
+      .cookie('refreshToken', tokens.refreshToken.token, {
+        httpOnly: true,
+        sameSite: 'lax',
+        expires: new Date(tokens.refreshToken.exp),
+        secure: false,
+        path: '/',
+      })
       .status(HttpStatus.CREATED)
-      .json({ accesToken: data.accesToken, user: data.user })
+      .json({ accessToken: tokens.accessToken })
   }
 
   @Post('registration')
@@ -72,11 +77,11 @@ export class AuthController {
   @Get('refresh')
   async refreshTokens(@Cookie('refreshToken') refreshToken: string) {
     if (!refreshToken) throw new UnauthorizedException()
-    const data = await this.authService.refresh(refreshToken)
-    if (!data) {
-      throw new BadRequestException('Unnable to refresh')
+    const accessToken = await this.authService.refresh(refreshToken)
+    if (!accessToken) {
+      throw new UnauthorizedException()
     }
-    return { accesToken: data.accesToken, user: data.user }
+    return { accessToken }
   }
 
   @Get('verify-email/:token')
@@ -93,8 +98,7 @@ export class AuthController {
     if (!refreshToken) {
       return response.sendStatus(HttpStatus.OK)
     }
-    await this.authService.logout(refreshToken)
-    response.clearCookie('refreshToken')
-    return response.sendStatus(HttpStatus.OK)
+    const message = await this.authService.logout(refreshToken)
+    return response.clearCookie('refreshToken').json(message)
   }
 }

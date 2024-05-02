@@ -1,16 +1,13 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
-import { Strategy } from 'passport-google-oauth20'
+import { Strategy, Profile, VerifyCallback } from 'passport-google-oauth20'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { TokensService } from 'src/tokens/tokens.service'
-
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(
-    private configService: ConfigService,
+    configService: ConfigService,
     private readonly prisma: PrismaService,
-    private readonly tokens: TokensService,
   ) {
     super({
       clientID: configService.get('google.client'),
@@ -20,10 +17,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     })
   }
   async validate(
-    first: unknown,
-    second: unknown,
-    profile: any,
-    done: (err: any, user: any, info?: any) => void,
+    access: string,
+    refresh: string,
+    profile: Profile,
+    done: VerifyCallback,
   ) {
     const { _json } = profile
     let user = await this.prisma.user.findUnique({
@@ -41,7 +38,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         },
       })
     }
-    const refreshToken = await this.tokens.generateRefreshToken(user.id)
-    done(null, { refreshToken })
+    done(null, user)
   }
 }
