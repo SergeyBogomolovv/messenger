@@ -17,9 +17,16 @@ module.exports = {
   },
   ignorePatterns: ['.eslintrc.js'],
   rules: {
+    semi: ['error', 'never'],
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
+    'no-console': 'warn',
+    'prefer-const': 'error',
+    'react-hooks/exhaustive-deps': 'off',
+    'no-var': 'error',
+    '@typescript-eslint/no-explicit-any': 'off',
+    'no-extra-semi': 'off',
   },
 };
