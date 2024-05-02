@@ -20,7 +20,7 @@ import { RegistrationDto } from './dto/registration.dto'
 import { ConfigService } from '@nestjs/config'
 import { User } from '@prisma/client'
 
-//TODO caching
+//TODO documentation
 @Controller('auth')
 export class AuthController {
   constructor(
