@@ -42,7 +42,7 @@ export class AuthService {
     const user = await this.usersService.findOne(dto.email)
     if (
       !user ||
-      user.provider !== 'Credentials' ||
+      !user.provider.includes('Credentials') ||
       !compareSync(dto.password, user.password)
     ) {
       throw new UnauthorizedException('Введены неверные данные')
