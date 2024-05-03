@@ -27,6 +27,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   ) {
     const { _json } = profile
     let user = await this.userService.findOne(_json.email)
+    await this.prisma.user.update({
+      where: { email: _json.email },
+      data: { provider: { push: 'Google' } },
+    })
     if (!user) {
       user = await this.prisma.user.create({
         data: {
@@ -35,7 +39,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
           name: _json.name,
           logo: _json.picture,
           verified: new Date(),
-          provider: 'Google',
+          provider: ['Google'],
         },
       })
     }

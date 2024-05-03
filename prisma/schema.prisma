@@ -19,18 +19,18 @@ enum Provider {
 }
 
 model User {
-  id         String    @id @default(cuid())
-  username   String    @unique
-  name       String   
+  id         String     @id @default(cuid())
+  username   String     @unique
+  name       String
   about      String?
   logo       String?
   password   String?
-  email      String    @unique
+  email      String     @unique
   verified   DateTime?
-  verifyLink String?   @unique
-  provider   Provider  @default(Credentials)
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @updatedAt @map("updated_at")
+  verifyLink String?    @unique
+  provider   Provider[] @default([Credentials])
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
   tokens     Token[]
 }
 
