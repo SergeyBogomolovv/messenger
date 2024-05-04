@@ -130,15 +130,14 @@ export class AuthController {
     const message = await this.authService.logout(refreshToken)
     return response.clearCookie('refreshToken').json(message)
   }
-
   @ApiOperation({
     summary: 'Проверка токена',
     description:
       'Проверяет, действителен ли токен из куков, возвращает boolean, использовать для миддлвари',
   })
   @ApiResponse({ status: 200, type: Boolean })
-  @Get('verify-token')
-  verifyRefreshToken(@Cookie('refreshToken') refreshToken: string) {
+  @Get('verify-token:token')
+  verifyRefreshToken(@Param('token') refreshToken: string) {
     if (!refreshToken) return false
     return this.authService.verifyRefreshToken(refreshToken)
   }
