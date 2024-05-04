@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common'
@@ -13,10 +14,13 @@ import { MailService } from 'src/mail/mail.service'
 import { ConfigService } from '@nestjs/config'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { RegistrationDto } from './dto/registration.dto'
+import { CACHE_MANAGER } from '@nestjs/cache-manager'
+import { Cache } from 'cache-manager'
 
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
     private usersService: UsersService,
     private tokensService: TokensService,
     private mailService: MailService,
@@ -42,7 +46,7 @@ export class AuthService {
     const user = await this.usersService.findOne(dto.email)
     if (
       !user ||
-      user.provider !== 'Credentials' ||
+      !user.provider.includes('Credentials') ||
       !compareSync(dto.password, user.password)
     ) {
       throw new UnauthorizedException('Введены неверные данные')
