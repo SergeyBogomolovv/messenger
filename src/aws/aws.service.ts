@@ -18,10 +18,9 @@ export class AwsService {
     },
   })
   constructor(private readonly config: ConfigService) {}
-
-  upload(file: Buffer, path: 'logos' | 'images') {
+  async upload(file: Buffer, path: 'logos' | 'images') {
     const fileName = uuid() + '.jpg'
-    this.s3Client.send(
+    await this.s3Client.send(
       new PutObjectCommand({
         Bucket: this.config.get('yandex.bucket'),
         Body: file,
@@ -30,9 +29,10 @@ export class AwsService {
     )
     return `https://${this.config.get('yandex.bucket')}.storage.yandexcloud.net/${path}/${fileName}`
   }
-  delete(path: string) {
+
+  async delete(path: string) {
     try {
-      this.s3Client.send(
+      await this.s3Client.send(
         new DeleteObjectCommand({
           Bucket: this.config.get('yandex.bucket'),
           Key: path,
