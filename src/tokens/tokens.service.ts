@@ -39,8 +39,6 @@ export class TokensService {
   generateAccessToken(user: User) {
     return this.jwtService.sign({
       id: user.id,
-      logo: user.logo,
-      name: user.name,
       username: user.username,
       email: user.email,
       verified: user.verified,
