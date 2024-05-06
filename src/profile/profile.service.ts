@@ -1,20 +1,29 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, Inject, Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { ProfileResponse } from './responses/user.response'
 import { UpdateProfileInput } from './entities/update-profile.input'
 import { AwsService } from 'src/aws/aws.service'
 import { ConfigService } from '@nestjs/config'
+import { CACHE_MANAGER } from '@nestjs/cache-manager'
+import { Cache } from 'cache-manager'
 
 @Injectable()
 export class ProfileService {
   constructor(
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
     private readonly prisma: PrismaService,
     private readonly aws: AwsService,
     private readonly config: ConfigService,
   ) {}
+
   async getProfileInfo(id: string) {
-    const user = await this.prisma.user.findUnique({ where: { id } })
-    return new ProfileResponse(user)
+    const cachedUser = await this.cache.get(id)
+    if (!cachedUser) {
+      const dbUser = await this.prisma.user.findUnique({ where: { id } })
+      await this.cache.set(id, dbUser)
+      return new ProfileResponse(dbUser)
+    }
+    return new ProfileResponse(cachedUser)
   }
 
   async updateProfile(id: string, data: UpdateProfileInput) {
@@ -30,6 +39,7 @@ export class ProfileService {
       where: { id },
       data,
     })
+    await this.cache.set(id, updatedUser)
     return updatedUser
   }
 
@@ -46,10 +56,12 @@ export class ProfileService {
       where: { id },
       data: { logo },
     })
+    await this.cache.set(id, updatedUser)
     return updatedUser
   }
 
-  deleteUserProfile(id: string) {
-    return this.prisma.user.delete({ where: { id } })
+  async deleteUserProfile(id: string) {
+    await this.cache.del(id)
+    return await this.prisma.user.delete({ where: { id } })
   }
 }

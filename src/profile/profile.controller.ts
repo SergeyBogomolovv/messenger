@@ -24,6 +24,7 @@ import { MessageResponse } from 'src/auth/responses/message-response'
 @Controller('profile')
 export class ProfileController {
   constructor(private profileService: ProfileService) {}
+
   @ApiOperation({
     summary: 'Получение информации о профиле',
   })

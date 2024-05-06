@@ -12,14 +12,16 @@ export class UsersService {
     private readonly prisma: PrismaService,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
   ) {}
-  create(user: CreateUserInput) {
+  async create(user: CreateUserInput) {
     const hashedPassword = this.hashPassword(user.password)
-    return this.prisma.user.create({
+    const newUser = await this.prisma.user.create({
       data: {
         ...user,
         password: hashedPassword,
       },
     })
+    await this.cache.set(newUser.id, newUser)
+    return newUser
   }
   async findOne(idOrEmail: string) {
     const cachedUser: User = await this.cache.get(idOrEmail)
@@ -30,7 +32,7 @@ export class UsersService {
         },
       })
       if (!dbUser) return null
-      await this.cache.set(idOrEmail, dbUser, 60 * 1000)
+      await this.cache.set(idOrEmail, dbUser)
       return dbUser
     }
     return cachedUser

@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common'
+import { CACHE_MANAGER } from '@nestjs/cache-manager'
+import { Inject, Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { Token, User } from '@prisma/client'
+import { Cache } from 'cache-manager'
 import { add } from 'date-fns'
 import { PrismaService } from 'src/prisma/prisma.service'
 import * as uuid from 'uuid'
@@ -8,31 +10,43 @@ import * as uuid from 'uuid'
 @Injectable()
 export class TokensService {
   constructor(
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
     private prisma: PrismaService,
     private jwtService: JwtService,
   ) {}
 
   async validateRefreshToken(token: string) {
-    const dbToken = await this.prisma.token.findUnique({ where: { token } })
-    if (!dbToken) return null
-    if (new Date(dbToken.exp) < new Date()) {
+    let existingToken = (await this.cache.get(token)) as Token
+    if (existingToken) {
+      existingToken = await this.prisma.token.findUnique({ where: { token } })
+    }
+    if (!existingToken) return null
+    if (new Date(existingToken.exp) < new Date()) {
       await this.deleteRefreshToken(token)
       return null
     }
-    return dbToken
+    return existingToken
   }
 
-  generateRefreshToken(userId: string): Promise<Token> {
-    return this.prisma.token.create({
+  async generateRefreshToken(userId: string): Promise<Token> {
+    const newToken = await this.prisma.token.create({
       data: { token: uuid.v4(), exp: add(new Date(), { months: 1 }), userId },
     })
+    await this.cache.set(newToken.token, newToken)
+    return newToken
   }
 
-  getRefreshToken(token: string): Promise<Token> {
-    return this.prisma.token.findUnique({ where: { token } })
+  async getRefreshToken(token: string): Promise<Token> {
+    let refreshToken = (await this.cache.get(token)) as Token
+    if (!refreshToken) {
+      refreshToken = await this.prisma.token.findUnique({ where: { token } })
+      await this.cache.set(refreshToken.token, refreshToken)
+    }
+    return refreshToken
   }
 
-  deleteRefreshToken(token: string): Promise<Token> {
+  async deleteRefreshToken(token: string): Promise<Token> {
+    await this.cache.del(token)
     return this.prisma.token.delete({ where: { token } })
   }
 

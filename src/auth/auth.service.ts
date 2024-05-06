@@ -16,6 +16,7 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { RegistrationDto } from './dto/registration.dto'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Cache } from 'cache-manager'
+import { User } from '@prisma/client'
 
 @Injectable()
 export class AuthService {
@@ -38,12 +39,16 @@ export class AuthService {
       to: dto.email,
       link: `${this.configService.get('server_url')}/auth/verify-email/${verifyLink}`,
     })
-    await this.usersService.create({ ...dto, verifyLink })
+    const newUser = await this.usersService.create({ ...dto, verifyLink })
+    await this.cache.set(newUser.email, newUser)
     return { message: 'Письмо с подтверждением выслано вам на почту' }
   }
 
   async login(dto: LoginDto) {
-    const user = await this.usersService.findOne(dto.email)
+    let user = (await this.cache.get(dto.email)) as User
+    if (!user) {
+      user = await this.usersService.findOne(dto.email)
+    }
     if (
       !user ||
       !user.provider.includes('Credentials') ||
@@ -84,12 +89,14 @@ export class AuthService {
   }
 
   async generateTokens(id: string) {
-    const user = await this.usersService.findOne(id)
+    let user = (await this.cache.get(id)) as User
+    user = await this.usersService.findOne(id)
     if (!user) throw new BadRequestException()
     const accessToken = this.tokensService.generateAccessToken(user)
     const refreshToken = await this.tokensService.generateRefreshToken(user.id)
     return { accessToken, refreshToken }
   }
+
   async verifyRefreshToken(token: string) {
     const isToken = await this.tokensService.validateRefreshToken(token)
     return isToken ? true : false
