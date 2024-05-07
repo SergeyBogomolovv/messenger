@@ -7,7 +7,9 @@ export const User = createParamDecorator(
   (key: string, ctx: ExecutionContext) => {
     const request: Request = ctx.switchToHttp().getRequest()
     const token = request.headers.authorization.split(' ')[1]
-    const user = jwt.decode(token) as JwtPayload
-    return user[key]
+    if (token) {
+      const user = jwt.decode(token) as JwtPayload
+      return user ? user[key] : null
+    }
   },
 )

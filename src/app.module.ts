@@ -34,7 +34,7 @@ import { JwtModule } from '@nestjs/jwt'
     CacheModule.registerAsync({
       useFactory: async (config: ConfigService) => {
         const store = await redisStore({
-          ttl: 10 * 1000,
+          ttl: 3 * 60 * 1000,
           socket: {
             host: config.get('redis.host'),
             port: config.get('redis.port'),

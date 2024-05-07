@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common'
+import { CACHE_MANAGER } from '@nestjs/cache-manager'
+import { Inject, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
+import { Cache } from 'cache-manager'
 import { Strategy, Profile, VerifyCallback } from 'passport-google-oauth20'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { UsersService } from 'src/users/users.service'
@@ -8,6 +10,7 @@ import { UsersService } from 'src/users/users.service'
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
     configService: ConfigService,
     private readonly prisma: PrismaService,
     private readonly userService: UsersService,
@@ -19,12 +22,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       scope: ['email', 'profile'],
     })
   }
-  async validate(
-    access: string,
-    refresh: string,
-    profile: Profile,
-    done: VerifyCallback,
-  ) {
+
+  async validate(_, __, profile: Profile, done: VerifyCallback) {
     const { _json } = profile
     let user = await this.userService.findOne(_json.email)
     if (user && !user.provider.includes('Google')) {
@@ -33,7 +32,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         data: { provider: { push: 'Google' } },
       })
     }
-
     if (!user) {
       user = await this.prisma.user.create({
         data: {

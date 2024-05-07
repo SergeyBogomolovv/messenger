@@ -18,20 +18,61 @@ enum Provider {
   Credentials
 }
 
+enum UserStatus {
+  online
+  offline
+}
+
 model User {
-  id         String     @id @default(cuid())
-  username   String     @unique
-  name       String
-  about      String?
-  logo       String?
-  password   String?
-  email      String     @unique
-  verified   DateTime?
-  verifyLink String?    @unique
-  provider   Provider[] @default([Credentials])
-  createdAt  DateTime   @default(now()) @map("created_at")
-  updatedAt  DateTime   @updatedAt @map("updated_at")
-  tokens     Token[]
+  id            String         @id @default(cuid())
+  username      String         @unique
+  name          String
+  about         String?
+  logo          String?
+  password      String?
+  email         String         @unique
+  verified      DateTime?
+  verifyLink    String?        @unique
+  status        UserStatus     @default(offline)
+  lastOnline    DateTime       @default(now())
+  provider      Provider[]     @default([Credentials])
+  createdAt     DateTime       @default(now()) @map("created_at")
+  tokens        Token[]
+  conversations Conversation[]
+  messages      Message[]
+  messagesSeen  MessageSeen[]
+}
+
+model Conversation {
+  id            String    @id @default(cuid())
+  isGroup       Boolean   @default(false)
+  title         String?
+  createdAt     DateTime  @default(now())
+  lastMessageAt DateTime  @default(now())
+  users         User[]
+  messages      Message[]
+}
+
+model Message {
+  id           String        @id @default(cuid())
+  content      String
+  imageUrl     String?
+  authorId     String
+  chatroomId   String
+  seenBy       MessageSeen[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  author       User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  conversation Conversation  @relation(fields: [chatroomId], references: [id], onDelete: Cascade)
+}
+
+model MessageSeen {
+  userId    String
+  messageId String
+  when      DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  @@id([userId, messageId])
 }
 
 model Token {

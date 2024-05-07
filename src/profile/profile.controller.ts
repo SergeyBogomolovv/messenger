@@ -24,6 +24,7 @@ import { MessageResponse } from 'src/auth/responses/message-response'
 @Controller('profile')
 export class ProfileController {
   constructor(private profileService: ProfileService) {}
+
   @ApiOperation({
     summary: 'Получение информации о профиле',
   })
@@ -40,23 +41,14 @@ export class ProfileController {
   })
   @ApiResponse({ status: 200, type: ProfileResponse })
   @Put()
-  @UseGuards(JwtGuard)
-  updateProfile(@User('id') id: string, @Body() data: UpdateProfileInput) {
-    return this.profileService.updateProfile(id, data)
-  }
-
-  @ApiOperation({
-    summary: 'Обновление аватарки профиля',
-  })
   @UseInterceptors(FileInterceptor('logo'))
-  @ApiResponse({ status: 200, type: ProfileResponse })
-  @Put('logo')
   @UseGuards(JwtGuard)
-  updateProfileLogo(
+  updateProfile(
     @User('id') id: string,
+    @Body() data: UpdateProfileInput,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.profileService.updateUserLogo(id, file)
+    return this.profileService.updateProfile(id, data, file)
   }
 
   @ApiOperation({
