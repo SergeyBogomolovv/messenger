@@ -2,7 +2,7 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { ProfileResponse } from './responses/user.response'
 import { UpdateProfileInput } from './entities/update-profile.input'
-import { AwsService } from 'src/aws/aws.service'
+import { CloudService } from 'src/cloud/cloud.service'
 import { ConfigService } from '@nestjs/config'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Cache } from 'cache-manager'
@@ -12,7 +12,7 @@ export class ProfileService {
   constructor(
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
     private readonly prisma: PrismaService,
-    private readonly aws: AwsService,
+    private readonly aws: CloudService,
     private readonly config: ConfigService,
   ) {}
 
