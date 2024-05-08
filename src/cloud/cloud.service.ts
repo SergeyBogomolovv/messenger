@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config'
 import { v4 as uuid } from 'uuid'
 
 @Injectable()
-export class AwsService {
+export class CloudService {
   private readonly s3Client = new S3Client({
     region: 'ru-central1',
     endpoint: 'https://storage.yandexcloud.net',

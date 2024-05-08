@@ -1,9 +1,11 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Inject, Injectable } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { Token, User } from '@prisma/client'
 import { Cache } from 'cache-manager'
 import { add } from 'date-fns'
+import { JwtPayload } from 'lib/types/jwt-payload'
 import { PrismaService } from 'src/prisma/prisma.service'
 import * as uuid from 'uuid'
 
@@ -13,11 +15,12 @@ export class TokensService {
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private config: ConfigService,
   ) {}
 
   async validateRefreshToken(token: string) {
     let existingToken = (await this.cache.get(token)) as Token
-    if (existingToken) {
+    if (!existingToken) {
       existingToken = await this.prisma.token.findUnique({ where: { token } })
     }
     if (!existingToken) return null
@@ -49,7 +52,11 @@ export class TokensService {
     await this.cache.del(token)
     return this.prisma.token.delete({ where: { token } })
   }
-
+  validateAccessToken(token: string) {
+    return this.jwtService.verify<JwtPayload>(token, {
+      secret: this.config.get('auth.secret'),
+    })
+  }
   generateAccessToken(user: User) {
     return this.jwtService.sign({
       id: user.id,

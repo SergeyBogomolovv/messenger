@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common'
 import { ProfileService } from './profile.service'
 import { ProfileController } from './profile.controller'
-import { AwsModule } from 'src/aws/aws.module'
+import { CloudModule } from 'src/cloud/cloud.module'
 
 @Module({
-  imports: [AwsModule],
+  imports: [CloudModule],
   providers: [ProfileService],
   controllers: [ProfileController],
 })

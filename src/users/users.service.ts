@@ -24,7 +24,7 @@ export class UsersService {
     return newUser
   }
 
-  async findByUsername(username: string, existingUsername?: string) {
+  async checkUsername(username: string, existingUsername?: string) {
     const existingUser = await this.findOne(username)
     if (existingUser) {
       if (existingUsername) {

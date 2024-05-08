@@ -16,6 +16,6 @@ export class UsersController {
     @Param('username') username: string,
     @User('username') existingUsername: string,
   ) {
-    return this.usersService.findByUsername(username, existingUsername)
+    return this.usersService.checkUsername(username, existingUsername)
   }
 }
