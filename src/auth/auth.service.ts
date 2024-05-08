@@ -16,7 +16,6 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { RegistrationDto } from './dto/registration.dto'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Cache } from 'cache-manager'
-import { User } from '@prisma/client'
 
 @Injectable()
 export class AuthService {
@@ -30,25 +29,27 @@ export class AuthService {
   ) {}
 
   async registration(dto: RegistrationDto) {
-    const user = await this.prisma.user.findFirst({
-      where: { OR: [{ username: dto.username }, { email: dto.email }] },
-    })
-    if (user) throw new ConflictException('Такой пользователь уже существует')
+    const isEmailExists = await this.usersService.findOne(dto.email)
+    if (isEmailExists)
+      throw new ConflictException('Такой пользователь уже существует')
+
+    const isUsernameExists = await this.usersService.findOne(dto.username)
+    if (isUsernameExists)
+      throw new ConflictException('Такой пользователь уже существует')
+
     const verifyLink = uuid.v4()
     this.mailService.sendActivationMail({
       to: dto.email,
       link: `${this.configService.get('server_url')}/auth/verify-email/${verifyLink}`,
     })
+
     const newUser = await this.usersService.create({ ...dto, verifyLink })
     await this.cache.set(newUser.email, newUser)
     return { message: 'Письмо с подтверждением выслано вам на почту' }
   }
 
   async login(dto: LoginDto) {
-    let user = (await this.cache.get(dto.email)) as User
-    if (!user) {
-      user = await this.usersService.findOne(dto.email)
-    }
+    const user = await this.usersService.findOne(dto.email)
     if (
       !user ||
       !user.provider.includes('Credentials') ||
@@ -89,8 +90,7 @@ export class AuthService {
   }
 
   async generateTokens(id: string) {
-    let user = (await this.cache.get(id)) as User
-    user = await this.usersService.findOne(id)
+    const user = await this.usersService.findOne(id)
     if (!user) throw new BadRequestException()
     const accessToken = this.tokensService.generateAccessToken(user)
     const refreshToken = await this.tokensService.generateRefreshToken(user.id)
