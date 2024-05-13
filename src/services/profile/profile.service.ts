@@ -4,10 +4,12 @@ import { UpdateProfileInput } from './dto/update-profile.dto'
 import { CloudService } from 'src/modules/cloud/cloud.service'
 import { ConfigService } from '@nestjs/config'
 import { UsersService } from 'src/repositories/users/users.service'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 
 @Injectable()
 export class ProfileService {
   constructor(
+    private readonly eventEmitter: EventEmitter2,
     private readonly cloud: CloudService,
     private readonly config: ConfigService,
     private readonly userService: UsersService,
@@ -21,10 +23,8 @@ export class ProfileService {
   async checkUsername(username: string, existingUsername?: string) {
     const existingUser = await this.userService.findByUsername(username)
     if (existingUser) {
-      if (existingUsername) {
-        if (existingUser.username === existingUsername) {
-          return false
-        }
+      if (existingUsername && existingUser.username === existingUsername) {
+        return false
       }
       return true
     }
@@ -46,12 +46,12 @@ export class ProfileService {
       )
     let newLogo = existingUser.logo
     if (file) {
-      newLogo = await this.cloud.upload(file.buffer, 'logos')
-      if (
-        existingUser.logo &&
-        existingUser.logo.includes(this.config.get('yandex.bucket'))
-      ) {
-        await this.cloud.delete(existingUser.logo.split('.net/')[1])
+      newLogo = await this.cloud.upload({ file: file.buffer, path: 'logos' })
+      if (existingUser.logo?.includes(this.config.get('yandex.bucket'))) {
+        this.eventEmitter.emit(
+          'delete_image',
+          existingUser.logo.split('.net/')[1],
+        )
       }
     }
     const updatedUser = await this.userService.update(id, {

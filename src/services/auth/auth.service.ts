@@ -8,7 +8,6 @@ import {
 import { LoginDto } from './dto/login.dto'
 import { compareSync } from 'bcrypt'
 import * as uuid from 'uuid'
-import { MailService } from 'src/modules/mail/mail.service'
 import { ConfigService } from '@nestjs/config'
 import { RegistrationDto } from './dto/registration.dto'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
@@ -16,15 +15,16 @@ import { Cache } from 'cache-manager'
 import { UsersService } from 'src/repositories/users/users.service'
 import { TokensService } from 'src/repositories/tokens/tokens.service'
 import { UserProvider } from 'src/repositories/users/types/user-provider'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 
 @Injectable()
 export class AuthService {
   constructor(
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
-    private usersService: UsersService,
-    private tokensService: TokensService,
-    private mailService: MailService,
-    private configService: ConfigService,
+    private readonly usersService: UsersService,
+    private readonly tokensService: TokensService,
+    private readonly configService: ConfigService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async registration(dto: RegistrationDto) {
@@ -39,7 +39,8 @@ export class AuthService {
       throw new ConflictException('Такой пользователь уже существует')
 
     const verifyLink = uuid.v4()
-    this.mailService.sendActivationMail({
+
+    this.eventEmitter.emit('send_activation_email', {
       to: dto.email,
       link: `${this.configService.get('server_url')}/auth/verify-email/${verifyLink}`,
     })
@@ -48,6 +49,7 @@ export class AuthService {
       ...dto,
       verifyLink,
     })
+
     await this.cache.set(newUser.email, newUser)
     return { message: 'Письмо с подтверждением выслано вам на почту' }
   }

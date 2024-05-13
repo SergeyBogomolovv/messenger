@@ -6,6 +6,8 @@ import {
 } from '@aws-sdk/client-s3'
 import { ConfigService } from '@nestjs/config'
 import { v4 as uuid } from 'uuid'
+import { UploadImageDto } from './dto/upload-image.dto'
+import { OnEvent } from '@nestjs/event-emitter'
 
 @Injectable()
 export class CloudService {
@@ -18,18 +20,18 @@ export class CloudService {
     },
   })
   constructor(private readonly config: ConfigService) {}
-  async upload(file: Buffer, path: 'logos' | 'images') {
+  async upload(dto: UploadImageDto) {
     const fileName = uuid() + '.jpg'
     await this.s3Client.send(
       new PutObjectCommand({
         Bucket: this.config.get('yandex.bucket'),
-        Body: file,
-        Key: `${path}/${fileName}`,
+        Body: dto.file,
+        Key: `${dto.path}/${fileName}`,
       }),
     )
-    return `https://${this.config.get('yandex.bucket')}.storage.yandexcloud.net/${path}/${fileName}`
+    return `https://${this.config.get('yandex.bucket')}.storage.yandexcloud.net/${dto.path}/${fileName}`
   }
-
+  @OnEvent('delete_image')
   async delete(path: string) {
     try {
       await this.s3Client.send(

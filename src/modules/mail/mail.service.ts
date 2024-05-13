@@ -1,10 +1,12 @@
 import { MailerService } from '@nestjs-modules/mailer'
 import { Injectable } from '@nestjs/common'
 import { ActivationMailInput } from './dto/activation-mail.input'
+import { OnEvent } from '@nestjs/event-emitter'
 
 @Injectable()
 export class MailService {
   constructor(private readonly mailerService: MailerService) {}
+  @OnEvent('send_activation_email')
   sendActivationMail(dto: ActivationMailInput) {
     this.mailerService.sendMail({
       to: dto.to,
