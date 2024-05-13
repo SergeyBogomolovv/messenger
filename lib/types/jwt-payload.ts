@@ -1,9 +1,9 @@
-import { $Enums } from '@prisma/client'
+import { UserProvider } from 'src/services/users/types/user-provider'
 
 export interface JwtPayload {
   id: string
   username: string
   email: string
   verified: string | null
-  provider: $Enums.Provider
+  providers: UserProvider
 }
