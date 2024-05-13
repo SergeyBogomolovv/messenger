@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import { Request } from 'express'
-import { TokensService } from 'src/services/tokens/tokens.service'
+import { TokensService } from 'src/repositories/tokens/tokens.service'
 
 @Injectable()
 export class JwtGuard implements CanActivate {

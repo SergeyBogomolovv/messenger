@@ -7,15 +7,15 @@ import {
 } from '@nestjs/common'
 import { LoginDto } from './dto/login.dto'
 import { compareSync } from 'bcrypt'
-import { TokensService } from 'src/services/tokens/tokens.service'
 import * as uuid from 'uuid'
 import { MailService } from 'src/modules/mail/mail.service'
 import { ConfigService } from '@nestjs/config'
 import { RegistrationDto } from './dto/registration.dto'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Cache } from 'cache-manager'
-import { UsersService } from 'src/services/users/users.service'
-import { UserProvider } from 'src/services/users/types/user-provider'
+import { UsersService } from 'src/repositories/users/users.service'
+import { TokensService } from 'src/repositories/tokens/tokens.service'
+import { UserProvider } from 'src/repositories/users/types/user-provider'
 
 @Injectable()
 export class AuthService {

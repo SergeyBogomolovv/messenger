@@ -1,7 +1,7 @@
 import { AbstractEntity } from 'lib/entities/abstract-entity'
-import { Conversation } from 'src/services/conversations/entities/conversation'
-import { User } from 'src/services/users/entities/user'
 import { Column, Entity, ManyToOne } from 'typeorm'
+import { User } from './user'
+import { Conversation } from './conversation'
 
 @Entity()
 export class Message extends AbstractEntity<Message> {

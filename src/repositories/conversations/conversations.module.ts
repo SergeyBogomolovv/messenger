@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common'
-import { JwtGuard } from 'lib/guards/jwt.guard'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { Conversation } from './entities/conversation'
+import { Conversation } from '../../models/conversation'
 import { ConversationsService } from './conversations.service'
 
 @Module({
   imports: [TypeOrmModule.forFeature([Conversation])],
-  providers: [ConversationsService, JwtGuard],
+  providers: [ConversationsService],
   exports: [ConversationsService],
 })
-export class TokensModule {}
+export class ConversationsModule {}

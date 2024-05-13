@@ -2,11 +2,10 @@ import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { redisStore } from 'cache-manager-redis-yet'
 import { CacheModule } from '@nestjs/cache-manager'
-import { TokensModule } from './services/tokens/tokens.module'
 import { MailModule } from './modules/mail/mail.module'
-import { AuthModule } from './modules/auth/auth.module'
+import { AuthModule } from './services/auth/auth.module'
 import { CloudModule } from './modules/cloud/cloud.module'
-import { ProfileModule } from './modules/profile/profile.module'
+import { ProfileModule } from './services/profile/profile.module'
 import app from './config/app'
 import redis from './config/redis'
 import auth from './config/auth'
@@ -17,12 +16,14 @@ import { JwtModule } from '@nestjs/jwt'
 import { EventEmitterModule } from '@nestjs/event-emitter'
 import { ScheduleModule } from '@nestjs/schedule'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { UsersModule } from './services/users/users.module'
 import postgres from './config/postgres'
-import { User } from './services/users/entities/user'
-import { Message } from './services/messages/entities/message'
-import { Conversation } from './services/conversations/entities/conversation'
-import { Token } from './services/tokens/entities/token'
+import { User } from './models/user'
+import { Message } from './models/message'
+import { Conversation } from './models/conversation'
+import { Token } from './models/token'
+import { UsersModule } from './repositories/users/users.module'
+import { TokensModule } from './repositories/tokens/tokens.module'
+import { ConversationsModule } from './repositories/conversations/conversations.module'
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { Token } from './services/tokens/entities/token'
     AuthModule,
     CloudModule,
     ProfileModule,
+    ConversationsModule,
   ],
 })
 export class AppModule {}

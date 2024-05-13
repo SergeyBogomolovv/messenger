@@ -1,10 +1,10 @@
 import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm'
-import { UserStatus } from '../types/user-status'
-import { UserProvider } from '../types/user-provider'
-import { Token } from 'src/services/tokens/entities/token'
+import { UserStatus } from '../repositories/users/types/user-status'
+import { UserProvider } from '../repositories/users/types/user-provider'
 import { AbstractEntity } from 'lib/entities/abstract-entity'
-import { Conversation } from 'src/services/conversations/entities/conversation'
-import { Message } from 'src/services/messages/entities/message'
+import { Token } from './token'
+import { Message } from './message'
+import { Conversation } from './conversation'
 
 @Entity()
 export class User extends AbstractEntity<User> {

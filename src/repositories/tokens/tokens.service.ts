@@ -7,9 +7,9 @@ import { Cache } from 'cache-manager'
 import { add } from 'date-fns'
 import { JwtPayload } from 'lib/types/jwt-payload'
 import * as uuid from 'uuid'
-import { Token } from './entities/token'
+import { Token } from '../../models/token'
 import { Repository } from 'typeorm'
-import { User } from '../users/entities/user'
+import { User } from '../../models/user'
 
 @Injectable()
 export class TokensService {

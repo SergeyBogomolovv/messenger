@@ -21,7 +21,7 @@ import { ConfigService } from '@nestjs/config'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { AccessTokenResponse } from './responses/access-token.response'
 import { MessageResponse } from './responses/message-response'
-import { User } from 'src/services/users/entities/user'
+import { User } from 'src/models/user'
 
 @ApiTags('Аунтефикация')
 @Controller('auth')

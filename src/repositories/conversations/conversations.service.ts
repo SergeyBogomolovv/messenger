@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Cache } from 'cache-manager'
 import { Repository } from 'typeorm'
-import { Conversation } from './entities/conversation'
+import { Conversation } from '../../models/conversation'
 
 @Injectable()
 export class ConversationsService {

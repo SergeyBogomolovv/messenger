@@ -3,7 +3,7 @@ import { ProfileResponse } from './responses/user.response'
 import { UpdateProfileInput } from './dto/update-profile.dto'
 import { CloudService } from 'src/modules/cloud/cloud.service'
 import { ConfigService } from '@nestjs/config'
-import { UsersService } from 'src/services/users/users.service'
+import { UsersService } from 'src/repositories/users/users.service'
 
 @Injectable()
 export class ProfileService {
