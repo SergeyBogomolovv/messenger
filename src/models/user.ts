@@ -1,6 +1,5 @@
 import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm'
-import { UserStatus } from '../repositories/users/types/user-status'
-import { UserProvider } from '../repositories/users/types/user-provider'
+import { UserProvider } from '../../lib/types/user-provider'
 import { AbstractEntity } from 'lib/entities/abstract-entity'
 import { Token } from './token'
 import { Message } from './message'
@@ -35,8 +34,8 @@ export class User extends AbstractEntity<User> {
   @Column({ unique: true, nullable: true })
   verifyLink?: string
 
-  @Column({ default: UserStatus.offline })
-  status: UserStatus
+  @Column({ default: 'online' })
+  status: 'online' | 'offline'
 
   @Column('text', { array: true })
   providers: UserProvider[]

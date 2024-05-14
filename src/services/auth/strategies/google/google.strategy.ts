@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
 import { Cache } from 'cache-manager'
 import { Strategy, Profile, VerifyCallback } from 'passport-google-oauth20'
-import { UserProvider } from 'src/repositories/users/types/user-provider'
+import { UserProvider } from 'lib/types/user-provider'
 import { UsersService } from 'src/repositories/users/users.service'
 
 @Injectable()

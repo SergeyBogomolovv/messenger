@@ -6,7 +6,7 @@ import { CreateUserWithPassword } from './dto/create-user-pass.dto'
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '../../models/user'
 import { Repository } from 'typeorm'
-import { UserProvider } from './types/user-provider'
+import { UserProvider } from '../../../lib/types/user-provider'
 import { CreateUserWithOAuth } from './dto/create-user-oauth.dto'
 
 @Injectable()

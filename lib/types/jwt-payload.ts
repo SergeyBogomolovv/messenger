@@ -1,4 +1,4 @@
-import { UserProvider } from 'src/repositories/users/types/user-provider'
+import { UserProvider } from 'lib/types/user-provider'
 
 export interface JwtPayload {
   id: string

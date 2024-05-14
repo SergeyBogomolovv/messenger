@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Exclude } from 'class-transformer'
 import { User } from 'src/models/user'
-import { UserProvider } from 'src/repositories/users/types/user-provider'
+import { UserProvider } from 'lib/types/user-provider'
 
 export class ProfileResponse {
   @ApiProperty({

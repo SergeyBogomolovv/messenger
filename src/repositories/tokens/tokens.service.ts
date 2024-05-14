@@ -26,11 +26,14 @@ export class TokensService {
     if (!existingToken) {
       existingToken = await this.tokensRepository.findOneBy({ token })
     }
-    if (!existingToken) return null
+    if (!existingToken) {
+      return null
+    }
     if (new Date(existingToken.exp) < new Date()) {
       await this.deleteRefreshToken(token)
       return null
     }
+    await this.cache.set(existingToken.token, existingToken)
     return existingToken
   }
 
@@ -40,6 +43,7 @@ export class TokensService {
       exp: add(new Date(), { months: 1 }),
       userId,
     })
+    await this.tokensRepository.save(token)
     await this.cache.set(token.token, token)
     return token
   }

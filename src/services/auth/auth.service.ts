@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   ConflictException,
-  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common'
@@ -10,17 +9,14 @@ import { compareSync } from 'bcrypt'
 import * as uuid from 'uuid'
 import { ConfigService } from '@nestjs/config'
 import { RegistrationDto } from './dto/registration.dto'
-import { CACHE_MANAGER } from '@nestjs/cache-manager'
-import { Cache } from 'cache-manager'
 import { UsersService } from 'src/repositories/users/users.service'
 import { TokensService } from 'src/repositories/tokens/tokens.service'
-import { UserProvider } from 'src/repositories/users/types/user-provider'
+import { UserProvider } from 'lib/types/user-provider'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 
 @Injectable()
 export class AuthService {
   constructor(
-    @Inject(CACHE_MANAGER) private readonly cache: Cache,
     private readonly usersService: UsersService,
     private readonly tokensService: TokensService,
     private readonly configService: ConfigService,
@@ -45,12 +41,11 @@ export class AuthService {
       link: `${this.configService.get('server_url')}/auth/verify-email/${verifyLink}`,
     })
 
-    const newUser = await this.usersService.createWithPassword({
+    await this.usersService.createWithPassword({
       ...dto,
       verifyLink,
     })
 
-    await this.cache.set(newUser.email, newUser)
     return { message: 'Письмо с подтверждением выслано вам на почту' }
   }
 
