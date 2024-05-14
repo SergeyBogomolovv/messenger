@@ -19,7 +19,7 @@ import { User } from 'lib/decorators/user.decorator'
 import { JwtGuard } from 'lib/guards/jwt.guard'
 import { UpdateProfileInput } from './dto/update-profile.dto'
 import { Response } from 'express'
-import { MessageResponse } from 'src/services/auth/responses/message-response'
+import { MessageResponse } from 'src/modules/auth/responses/message-response'
 
 @ApiTags('Информация о профиле')
 @Controller('profile')
