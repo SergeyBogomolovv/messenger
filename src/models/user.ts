@@ -40,6 +40,10 @@ export class User extends AbstractEntity<User> {
   @Column('text', { array: true })
   providers: UserProvider[]
 
+  @ManyToMany(() => User)
+  @JoinTable()
+  contacts: User[]
+
   @OneToMany(() => Token, (token) => token.user, {
     cascade: true,
     onDelete: 'CASCADE',

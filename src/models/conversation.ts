@@ -8,11 +8,14 @@ export class Conversation extends AbstractEntity<Conversation> {
   @Column({ default: false })
   isGroup: boolean
 
-  @Column()
-  title: string
+  @Column({ nullable: true })
+  title?: string
 
   @Column({ nullable: true })
   logo?: string
+
+  @Column({ type: 'timestamptz', default: new Date() })
+  createdAt: Date
 
   @Column({ type: 'timestamptz' })
   lastMessageAt: Date

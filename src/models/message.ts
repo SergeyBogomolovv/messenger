@@ -11,6 +11,12 @@ export class Message extends AbstractEntity<Message> {
   @Column({ nullable: true })
   image?: string
 
+  @Column({ type: 'timestamptz', default: new Date() })
+  createdAt: Date
+
+  @Column()
+  seen?: boolean
+
   @ManyToOne(() => User, (user) => user.messages)
   author: User
 
